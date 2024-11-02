@@ -92,6 +92,10 @@ class UserController extends Controller
         }
     }
 
+    public function getUserById(int $userId): ?User {
+        return User::where('id', $userId)->first();
+    }
+
     /**
      * Validating the data sent by the user
      */
