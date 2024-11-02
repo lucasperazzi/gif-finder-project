@@ -78,6 +78,20 @@ class UserController extends Controller
         }
     }
 
+    public function getAllUsers(Request $request): JsonResponse {
+        try {
+            $users = User::all();
+            return response()->json([
+                'data' => $users
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Error obtaining users',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Validating the data sent by the user
      */

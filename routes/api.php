@@ -4,7 +4,14 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 /**
- * API routes: Here we define our main routes to use our services
+ * Registration and login routes
  */
-Route::post('/register', [UserController::class, 'registerUser']);
-Route::post('/login', [UserController::class, 'loginUser']);
+Route::post('register', [UserController::class, 'registerUser']);
+Route::post('login', [UserController::class, 'loginUser']);
+
+/**
+ * Authentication required routes
+ */
+Route::middleware(['auth:sanctum'])->group(function() {
+    Route::get('/users', [UserController::class, 'getAllUsers']);
+});
