@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\RUserGif;
 use App\Models\User;
+use App\Services\UserInteractionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
@@ -13,8 +14,18 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Client\Response as ClientResponse;
 
 class GifController extends Controller {
+    /**
+     * This API key would usually be part of the .env file, to avoid commiting this directly into github
+     * but i'm leaving it here to avoid people testing it to create their own API keys.
+     */
     private const GIPHY_API_KEY = '8BUVuPv4FWV4QqNGskbGnLXoFZyrmmuS';
     private const GIPHY_MAIN_URL = 'https://api.giphy.com/v1/gifs/';
+
+    private $userInteractionService;
+
+    public function __construct(UserInteractionService $userInteractionService) {
+        $this->userInteractionService = $userInteractionService;
+    }
 
     /**
      * This method returns a JSON object with GIFObjects from Giphy inside of it.
@@ -39,13 +50,16 @@ class GifController extends Controller {
                 'limit' => $request->limit,
                 'offset' => $request->offset
             ]);
-            $response = $this->getGiphyResponse($giphyResponse);
-            return response()->json($response);
+            $response = $this->createResponseForUser($giphyResponse);
+            $this->userInteractionService->createUserInteraction($request, 200, $response);
+            return response()->json($response, 200);
         } catch (\Throwable $th) {
-            return response()->json([
+            $response = [
                 'message' => 'Error obtaining gifs',
                 'error' => $th->getMessage()
-            ], 500);
+            ];
+            $this->userInteractionService->createUserInteraction($request, 500, $response);
+            return response()->json($response, 500);
         }
     }
 
@@ -65,12 +79,15 @@ class GifController extends Controller {
             }
             $giphyResponse = $this->doGetGifById($request->gifId);
             $response = $this->createResponseForUser($giphyResponse);
+            $this->userInteractionService->createUserInteraction($request, 200, $response);
             return response()->json($response);
         } catch (\Throwable $th) {
-            return response()->json([
+            $response = [
                 'message' => 'Error obtaining gifs',
                 'error' => $th->getMessage()
-            ], 500);
+            ];
+            $this->userInteractionService->createUserInteraction($request, 500, $response);
+            return response()->json($response, 500);
         }
     }
 
@@ -95,29 +112,30 @@ class GifController extends Controller {
             if ($user && $gifRequest->successful()) {
                 // Check if the GIF is already marked as favourite for that user
                 if (
-                    RUserGif::where('user_id', $request->userId)
-                        ->where('gif_id', $request->gifId)
-                        ->first()
+                    RUserGif::where('user_id', $request->userId)->where('gif_id', $request->gifId)->first()
                 ) {
-                    return response()->json([
-                        'message' => 'GIF already marked as favourite for that user'
-                    ], 401);
+                    $response = ['message' => 'GIF already marked as favourite for that user'];
+                    $this->userInteractionService->createUserInteraction($request, 401, $response);
+                    return response()->json($response, 401);
                 }
                 RUserGif::create([
                     'user_id' => $request->userId,
                     'gif_id' => $request->gifId,
                     'alias' => $request->alias
                 ]);
+                $this->userInteractionService->createUserInteraction($request, 200, null);
                 return response()->noContent(200);
             }
-            return response()->json([
-                'message' => 'Provided User and/or GIF not found'
-            ], 401);
+            $response = ['message' => 'Provided User and/or GIF not found'];
+            $this->userInteractionService->createUserInteraction($request, 401, $response);
+            return response()->json($response, 401);
         } catch (\Throwable $th) {
-            return response()->json([
+            $response = [
                 'message' => 'Error saving favourite gif',
                 'error' => $th->getMessage()
-            ], 500);
+            ];
+            $this->userInteractionService->createUserInteraction($request, 500, $response);
+            return response()->json($response, 500);
         }
     }
 
@@ -150,10 +168,12 @@ class GifController extends Controller {
     private function validateDataAndFailIfNeeded(Request $request, array $paramasToCheck): ?JsonResponse {
         $validation = Validator::make($request->all(), $paramasToCheck);
         if ($validation->fails()) {
-            return response()->json([
+            $response = [
                 'message' => 'Data validation error',
                 'errors' => $validation->errors()
-            ], 401);
+            ];
+            $this->userInteractionService->createUserInteraction($request, 401, $response);
+            return response()->json($response, 401);
         }
         return null;
     }
