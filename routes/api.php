@@ -13,7 +13,7 @@ Route::post('login', [UserController::class, 'loginUser']);
 /**
  * Authentication required routes
  */
-Route::middleware(['auth:sanctum'])->group(function() {
+Route::middleware(['auth:api'])->group(function() {
     Route::get('users', [UserController::class, 'getAllUsers']);
     Route::get('gif/search', [GifController::class, 'getGifByStringSearch']);
     Route::get('gif/searchById', [GifController::class, 'getGifById']);

@@ -34,7 +34,7 @@ class UserController extends Controller
             ]);
             return response()->json([
                 'message' => 'User created correctly',
-                'token' => $user->createToken('USER-TOKEN')->plainTextToken
+                'token' => $user->createToken('USER-TOKEN')->accessToken
             ], 200);
         } catch (\Throwable $th) {
             // Catching any possible error
@@ -65,10 +65,7 @@ class UserController extends Controller
             }
             // Finding the User, and creating a token
             $user = User::where('email', $request->email)->first();
-            return response()->json([
-                'message' => 'User logged in correctly',
-                'token' => $user->createToken('USER-TOKEN')->plainTextToken
-            ], 201);
+            return response()->json(['token' => $user->createToken('USER-TOKEN')->accessToken], 201);
 
         } catch (\Throwable $th) {
             return response()->json([
