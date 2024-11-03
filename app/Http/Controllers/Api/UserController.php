@@ -11,8 +11,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 
-class UserController extends Controller
-{
+class UserController extends Controller {
+    /**
+     * Registers a new User in the system
+     * @param Request $request The user sent request
+     * @return JsonReponse A json response with the user token or an error message
+     */
     public function registerUser(Request $request): JsonResponse {
         try {
             // Validating user data
@@ -33,7 +37,6 @@ class UserController extends Controller
                 'password' => Hash::make($request->password)
             ]);
             return response()->json([
-                'message' => 'User created correctly',
                 'token' => $user->createToken('USER-TOKEN')->accessToken
             ], 200);
         } catch (\Throwable $th) {
@@ -45,6 +48,11 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Logs in a user into the system
+     * @param Request $request The user sent request with the credentials
+     * @return JsonResponse With an authentication token or an error message
+     */
     public function loginUser(Request $request): JsonResponse {
         try {
             // Validating user data
@@ -75,6 +83,12 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Gets an array with all registered users in the system
+     * This method was added for testing purposes.
+     * @param Request $request The user sent request
+     * @return JsonResponse With an array of "data" with all users, or an error message
+     */
     public function getAllUsers(Request $request): JsonResponse {
         try {
             $users = User::all();
@@ -89,15 +103,22 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Searches a User by its ID
+     * @param int $userId The ID of the User to search
+     * @return User|null The user if found, and NULL if not
+     */
     public function getUserById(int $userId): ?User {
         return User::where('id', $userId)->first();
     }
 
     /**
-     * Validating the data sent by the user
+     * Validates the data sent by the user
+     * @param Request $request The original user sent request with data to validate
+     * @param array $paramsToCheck An array with: params => rules to check
      */
-    private function validateDataAndFailIfNeeded(Request $request, array $paramasToCheck): ?JsonResponse {
-        $validation = Validator::make($request->all(), $paramasToCheck);
+    protected function validateDataAndFailIfNeeded(Request $request, array $paramsToCheck): ?JsonResponse {
+        $validation = Validator::make($request->all(), $paramsToCheck);
         if ($validation->fails()) {
             return response()->json([
                 'message' => 'Data validation error',

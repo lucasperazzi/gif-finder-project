@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Log;
 
 class UserInteractionService {
     /**
-     * This method register each user interaction with any service.
+     * Registers each user interaction with a service.
+     * @param Request $request The original user sent request
+     * @param int $httpCode The HTTP code that we are returning to the client
+     * @param array|null $response The response we are returning to the client
      */
     public function createUserInteraction(Request $request, int $httpCode, ?array $response): void {
         try {
