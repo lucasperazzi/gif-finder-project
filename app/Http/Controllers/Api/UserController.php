@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 
 class UserController extends Controller {
+    private $userModel;
+
+    /**
+     * Constructor with injected User model dependency for testing purposes
+     * @param User $userModel The User model class
+     */
+    public function __construct(User $userModel) {
+        $this->userModel = $userModel;
+    }
+
     /**
      * Registers a new User in the system
      * @param Request $request The user sent request
@@ -31,7 +41,7 @@ class UserController extends Controller {
                 return $errorResponse;
             }
             // If it passed the validation, create the user
-            $user  = User::create([
+            $user  = $this->userModel::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password)
@@ -72,8 +82,8 @@ class UserController extends Controller {
                 ], 401);
             }
             // Finding the User, and creating a token
-            $user = User::where('email', $request->email)->first();
-            return response()->json(['token' => $user->createToken('USER-TOKEN')->accessToken], 201);
+            $user = $this->userModel::where('email', $request->email)->first();
+            return response()->json(['token' => $user->createToken('USER-TOKEN')->accessToken], 200);
 
         } catch (\Throwable $th) {
             return response()->json([
@@ -91,7 +101,7 @@ class UserController extends Controller {
      */
     public function getAllUsers(Request $request): JsonResponse {
         try {
-            $users = User::all();
+            $users = $this->userModel::all();
             return response()->json([
                 'data' => $users
             ], 200);
@@ -109,7 +119,7 @@ class UserController extends Controller {
      * @return User|null The user if found, and NULL if not
      */
     public function getUserById(int $userId): ?User {
-        return User::where('id', $userId)->first();
+        return $this->userModel::where('id', $userId)->first();
     }
 
     /**
