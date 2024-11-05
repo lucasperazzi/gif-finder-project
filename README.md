@@ -1,6 +1,6 @@
 # Gif Finder
 
-Gif Finder is a web application built with Laravel PHP that allows users to search and discover GIFs. It uses MySQL for data storage and Passport for secure user authentication.
+Gif Finder is a web application built with Laravel PHP that allows users to search and discover GIFs. It uses MySQL for data storage and Passport for secure user authentication. It is connected to GIPHYs API to retrieve your favourite GIFs.
 
 ## Features
 
