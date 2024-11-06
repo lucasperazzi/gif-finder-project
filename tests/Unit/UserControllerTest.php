@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class UserControllerTest extends TestCase {
     // Tried to make this test work, but as the create method from the User model is static,
-    // i was not able to mock it. With more time for investigation i think i could have made it work
+    // i was not able to mock it. With more time for investigation i would have made it work
 
 
     // private $mockedUserModel;
